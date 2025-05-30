@@ -141,20 +141,40 @@ export default function CheckScreen() {
 
   const handleBackToHome = () => {
     setShowResult(false);
+    setShowHospitalDetail(false);
+    setSelectedHospital(null);
     router.replace('/');
   };
 
   const handleHospitalPress = (hospital: Hospital) => {
-    // Set hospital data immediately and show modal
-    setSelectedHospital(hospital);
+    // Set hospital data and show detail modal immediately
+    setSelectedHospital({
+      ...hospital,
+      doctors: hospital.doctors.map(doctor => ({
+        ...doctor,
+        isExpanded: doctor.isExpanded || false
+      }))
+    });
     setShowHospitalDetail(true);
   };
 
   const handleCloseHospitalDetail = () => {
     setShowHospitalDetail(false);
+    // Clear selected hospital after modal animation completes
     setTimeout(() => {
       setSelectedHospital(null);
     }, 300);
+  };
+
+  const handleBackFromResult = () => {
+    // If hospital detail is open, close it first
+    if (showHospitalDetail) {
+      setShowHospitalDetail(false);
+      setSelectedHospital(null);
+    } else {
+      // Otherwise, go back to symptom selection
+      setShowResult(false);
+    }
   };
 
   const toggleDoctorExpansion = (doctorId: string) => {
@@ -572,7 +592,7 @@ export default function CheckScreen() {
         >
           <ChevronLeft size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>DokuCek</Text>
+        <Text style={styles.headerTitle}>DokuCheck</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -661,11 +681,11 @@ export default function CheckScreen() {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => setShowResult(false)}
+            onPress={handleBackFromResult}
           >
             <ChevronLeft size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>DokuCek</Text>
+          <Text style={styles.headerTitle}>DokuCheck</Text>
           <View style={styles.headerRight} />
         </View>
 
@@ -728,94 +748,93 @@ export default function CheckScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-    </Modal>
-  );
 
-  const renderHospitalDetail = () => (
-    <Modal 
-      visible={showHospitalDetail} 
-      animationType="slide" 
-      presentationStyle="pageSheet"
-      onRequestClose={handleCloseHospitalDetail}
-    >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalHeaderTitle}>Detail Rumah Sakit</Text>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleCloseHospitalDetail}
-          >
-            <X size={24} color={theme.colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        {selectedHospital ? (
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.hospitalImageContainer}>
-              <Image
-                source={{ uri: selectedHospital.image }}
-                style={styles.hospitalImage}
-                resizeMode="cover"
-              />
-              <View style={styles.distanceTag}>
-                <Text style={styles.distanceText}>{selectedHospital.distance}</Text>
-              </View>
-            </View>
-
-            <View style={styles.hospitalInfo}>
-              <Text style={styles.hospitalName}>{selectedHospital.name}</Text>
-              <Text style={styles.hospitalAddress}>{selectedHospital.address}</Text>
-              
-              <TouchableOpacity style={styles.contactButton}>
-                <Phone size={20} color="white" />
-                <Text style={styles.contactButtonText}>Hubungi Fasilitas Kesehatan</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.doctorsSection}>
-              <Text style={styles.doctorsTitle}>Daftar Dokter</Text>
-              <Text style={styles.doctorsSubtitle}>Poli Penyakit dalam</Text>
-              
-              {selectedHospital.doctors.map((doctor) => (
-                <View key={doctor.id} style={styles.doctorCard}>
-                  <TouchableOpacity
-                    style={styles.doctorHeader}
-                    onPress={() => toggleDoctorExpansion(doctor.id)}
-                  >
-                    <View style={styles.doctorInfo}>
-                      <View style={styles.doctorIcon}>
-                        <User size={20} color={theme.colors.primary} />
-                      </View>
-                      <Text style={styles.doctorName}>{doctor.name}</Text>
-                    </View>
-                    {doctor.isExpanded ? (
-                      <ChevronUp size={20} color={theme.colors.neutral_800} />
-                    ) : (
-                      <ChevronDown size={20} color={theme.colors.neutral_800} />
-                    )}
-                  </TouchableOpacity>
-                  
-                  {doctor.isExpanded && (
-                    <View style={styles.scheduleContainer}>
-                      <Text style={styles.scheduleTitle}>Jam Praktek</Text>
-                      {doctor.schedule.map((schedule, index) => (
-                        <View key={index} style={styles.scheduleRow}>
-                          <Text style={styles.scheduleDay}>{schedule.day}</Text>
-                          <Text style={styles.scheduleHours}>{schedule.hours}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-                </View>
-              ))}
-            </View>
-          </ScrollView>
-        ) : (
-          <View style={styles.noDataContainer}>
-            <Text style={styles.noDataText}>Data rumah sakit tidak tersedia</Text>
+      {/* Hospital Detail Modal - Rendered inside Result Modal */}
+      <Modal 
+        visible={showHospitalDetail} 
+        animationType="slide" 
+        presentationStyle="pageSheet"
+        onRequestClose={handleCloseHospitalDetail}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalHeaderTitle}>Detail Rumah Sakit</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={handleCloseHospitalDetail}
+            >
+              <X size={24} color={theme.colors.text} />
+            </TouchableOpacity>
           </View>
-        )}
-      </SafeAreaView>
+
+          {selectedHospital ? (
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              <View style={styles.hospitalImageContainer}>
+                <Image
+                  source={{ uri: selectedHospital.image }}
+                  style={styles.hospitalImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.distanceTag}>
+                  <Text style={styles.distanceText}>{selectedHospital.distance}</Text>
+                </View>
+              </View>
+
+              <View style={styles.hospitalInfo}>
+                <Text style={styles.hospitalName}>{selectedHospital.name}</Text>
+                <Text style={styles.hospitalAddress}>{selectedHospital.address}</Text>
+                
+                <TouchableOpacity style={styles.contactButton}>
+                  <Phone size={20} color="white" />
+                  <Text style={styles.contactButtonText}>Hubungi Fasilitas Kesehatan</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.doctorsSection}>
+                <Text style={styles.doctorsTitle}>Daftar Dokter</Text>
+                <Text style={styles.doctorsSubtitle}>Poli Penyakit dalam</Text>
+                
+                {selectedHospital.doctors.map((doctor) => (
+                  <View key={doctor.id} style={styles.doctorCard}>
+                    <TouchableOpacity
+                      style={styles.doctorHeader}
+                      onPress={() => toggleDoctorExpansion(doctor.id)}
+                    >
+                      <View style={styles.doctorInfo}>
+                        <View style={styles.doctorIcon}>
+                          <User size={20} color={theme.colors.primary} />
+                        </View>
+                        <Text style={styles.doctorName}>{doctor.name}</Text>
+                      </View>
+                      {doctor.isExpanded ? (
+                        <ChevronUp size={20} color={theme.colors.neutral_800} />
+                      ) : (
+                        <ChevronDown size={20} color={theme.colors.neutral_800} />
+                      )}
+                    </TouchableOpacity>
+                    
+                    {doctor.isExpanded && (
+                      <View style={styles.scheduleContainer}>
+                        <Text style={styles.scheduleTitle}>Jam Praktek</Text>
+                        {doctor.schedule.map((schedule, index) => (
+                          <View key={index} style={styles.scheduleRow}>
+                            <Text style={styles.scheduleDay}>{schedule.day}</Text>
+                            <Text style={styles.scheduleHours}>{schedule.hours}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>Data rumah sakit tidak tersedia</Text>
+            </View>
+          )}
+        </SafeAreaView>
+      </Modal>
     </Modal>
   );
 
@@ -823,7 +842,6 @@ export default function CheckScreen() {
     <>
       {renderSymptomChecker()}
       {renderResultScreen()}
-      {renderHospitalDetail()}
     </>
   );
 }
