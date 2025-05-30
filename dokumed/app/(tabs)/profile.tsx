@@ -6,18 +6,21 @@ import {
   Image, 
   TouchableOpacity, 
   ScrollView, 
-  SafeAreaView 
+  SafeAreaView,
+  Alert 
 } from 'react-native';
-import { useTheme } from '../../hooks/useTheme';
+import { useTheme } from '@/hooks/useTheme';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { router } from 'expo-router';
 import type { SFSymbols6_0 } from '@/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
 
   const profileData = {
     name: 'Awa awa',
-    avatar: require('../../assets/images/doku-pfp.png'),
+    avatar: require('@/assets/images/doku-pfp.png'),
     domisili: 'Bandung, Indonesia',
     jenisKelamin: 'Perempuan',
     tanggalLahir: '29/02/2005',
@@ -25,6 +28,32 @@ export default function ProfileScreen() {
     tinggiBadan: '160 centimeter',
     golonganDarah: 'AB',
     riwayatPenyakit: '-'
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Konfirmasi Logout",
+      "Apakah Anda yakin ingin keluar dari akun?",
+      [
+        {
+          text: "Batal",
+          style: "cancel"
+        },
+        { 
+          text: "Logout", 
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('userToken');
+              
+              router.replace('/landing');
+            } catch (error) {
+              console.error("Error during logout:", error);
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
   };
 
   const styles = StyleSheet.create({
@@ -71,6 +100,7 @@ export default function ProfileScreen() {
     },
     infoSection: {
       marginBottom: theme.spacing.b1,
+      marginHorizontal: 20,
     },
     infoLabel: {
       fontSize: theme.fontSizes.sh3,
@@ -83,6 +113,20 @@ export default function ProfileScreen() {
       fontFamily: theme.fontFamily.regular,
       color: theme.colors.text,
     },
+    logoutButton: {
+      backgroundColor: theme.colors.light_purple, 
+      paddingHorizontal: theme.spacing.b1,
+      paddingVertical: theme.spacing.b3,
+      borderRadius: 50,
+      marginTop: theme.spacing.b1,
+      width: '100%',
+      alignItems: 'center',
+    },
+    logoutButtonText: {
+      color: theme.colors.purple, 
+      fontFamily: theme.fontFamily.medium,
+      fontSize: theme.fontSizes.b2,
+    }
   });
 
   return (
@@ -140,6 +184,14 @@ export default function ProfileScreen() {
               <Text style={styles.infoLabel}>Riwayat Penyakit</Text>
               <Text style={styles.infoValue}>{profileData.riwayatPenyakit}</Text>
             </View>
+            
+            {/* Tombol Logout */}
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

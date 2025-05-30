@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import {
@@ -41,11 +40,15 @@ export default function RootLayout() {
     <CustomThemeProvider>
       <ThemeProvider value={DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="landing" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="register" options={{ headerShown: false }} />
-        </Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="landing" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="verification" options={{ headerShown: false }} />
+        <Stack.Screen name="data-general" options={{ headerShown: false }} />
+        <Stack.Screen name="data-resident" options={{ headerShown: false }} />
+        <Stack.Screen name="data-personal" options={{ headerShown: false }} />
+      </Stack>
         <StatusBar style="dark" />
       </ThemeProvider>
     </CustomThemeProvider>
