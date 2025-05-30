@@ -28,9 +28,8 @@ const adsData = [
 ];
 
 export default function HomeScreen() {
-  // Fungsi navigasi
   const navigateToCheck = () => {
-    router.push('/check');
+    router.push('/symtomp');
   };
   
   const navigateToMedicine = () => {

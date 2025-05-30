@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ChevronLeft, Search, X, Phone, ChevronDown, ChevronUp, User } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
+import { router } from 'expo-router';
 
 interface Symptom {
   id: string;
@@ -54,37 +55,59 @@ const availableSymptoms: Symptom[] = [
   { id: '12', name: 'Sesak napas' },
 ];
 
-const mockHospital: Hospital = {
-  id: '1',
-  name: 'Klinik Utama Jasmine MQ Medika',
-  address: 'Jl. Dayang Sumbi No.10, Lb. Siliwangi, Kecamatan Coblong, Kota Bandung, Jawa Barat 40132',
-  distance: '2.4 kilometer dari Anda',
-  image: 'https://via.placeholder.com/400x200', 
-  phone: '+62-22-1234567',
-  doctors: [
-    {
-      id: '1',
-      name: 'Dr. Erdianti Silalahi',
-      specialty: 'Poli Penyakit dalam',
-      schedule: [
-        { day: 'Senin', hours: '09.00-14.00' },
-        { day: 'Selasa', hours: '09.00-14.00' },
-        { day: 'Rabu', hours: '09.00-14.00' },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Dr. Wiga Ryan',
-      specialty: 'Poli Penyakit dalam',
-      schedule: [
-        { day: 'Senin', hours: '09.00-14.00' },
-        { day: 'Selasa', hours: '09.00-14.00' },
-        { day: 'Rabu', hours: '09.00-14.00' },
-      ],
-      isExpanded: true,
-    },
-  ],
-};
+const mockHospitals: Hospital[] = [
+  {
+    id: '1',
+    name: 'Klinik Utama Jasmine MQ Medika',
+    address: 'Jl. Dayang Sumbi No.10, Lb. Siliwangi, Kecamatan Coblong, Kota Bandung, Jawa Barat 40132',
+    distance: '2.4 kilometer dari Anda',
+    image: 'https://via.placeholder.com/120',
+    phone: '+62-22-1234567',
+    doctors: [
+      {
+        id: '1',
+        name: 'Dr. Erdianti Silalahi',
+        specialty: 'Poli Penyakit dalam',
+        schedule: [
+          { day: 'Senin', hours: '09.00-14.00' },
+          { day: 'Selasa', hours: '09.00-14.00' },
+          { day: 'Rabu', hours: '09.00-14.00' },
+        ],
+      },
+      {
+        id: '2',
+        name: 'Dr. Wiga Ryan',
+        specialty: 'Poli Penyakit dalam',
+        schedule: [
+          { day: 'Senin', hours: '09.00-14.00' },
+          { day: 'Selasa', hours: '09.00-14.00' },
+          { day: 'Rabu', hours: '09.00-14.00' },
+        ],
+        isExpanded: true,
+      },
+    ],
+  },
+  {
+    id: '2',
+    name: 'Klinik YRAP Tubagus Ismail',
+    address: 'Jl. Tubagus Ismail No.51A, Sekeloa, Kecamatan Coblong, Kota Bandung, Jawa Barat 40134',
+    distance: '3.1 kilometer dari Anda',
+    image: 'https://via.placeholder.com/120',
+    phone: '+62-22-7654321',
+    doctors: [
+      {
+        id: '3',
+        name: 'Dr. Ahmad Fauzi',
+        specialty: 'Poli Penyakit dalam',
+        schedule: [
+          { day: 'Senin', hours: '08.00-15.00' },
+          { day: 'Selasa', hours: '08.00-15.00' },
+          { day: 'Rabu', hours: '08.00-15.00' },
+        ],
+      },
+    ],
+  },
+];
 
 export default function CheckScreen() {
   const { theme } = useTheme();
@@ -92,7 +115,8 @@ export default function CheckScreen() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<Symptom[]>([]);
   const [searchText, setSearchText] = useState('');
   const [showResult, setShowResult] = useState(false);
-  const [hospitalData, setHospitalData] = useState<Hospital>(mockHospital);
+  const [showHospitalDetail, setShowHospitalDetail] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
 
   const filteredSymptoms = availableSymptoms.filter(symptom =>
     symptom.name.toLowerCase().includes(searchText.toLowerCase()) &&
@@ -107,14 +131,38 @@ export default function CheckScreen() {
     setSelectedSymptoms(selectedSymptoms.filter(s => s.id !== symptomId));
   };
 
+  const handleBackFromSymptomInput = () => {
+    router.back();
+  };
+
   const handleConfirmSymptoms = () => {
     setShowResult(true);
   };
 
+  const handleBackToHome = () => {
+    setShowResult(false);
+    router.replace('/');
+  };
+
+  const handleHospitalPress = (hospital: Hospital) => {
+    // Set hospital data immediately and show modal
+    setSelectedHospital(hospital);
+    setShowHospitalDetail(true);
+  };
+
+  const handleCloseHospitalDetail = () => {
+    setShowHospitalDetail(false);
+    setTimeout(() => {
+      setSelectedHospital(null);
+    }, 300);
+  };
+
   const toggleDoctorExpansion = (doctorId: string) => {
-    setHospitalData(prev => ({
-      ...prev,
-      doctors: prev.doctors.map(doctor =>
+    if (!selectedHospital) return;
+    
+    setSelectedHospital(prev => ({
+      ...prev!,
+      doctors: prev!.doctors.map(doctor =>
         doctor.id === doctorId
           ? { ...doctor, isExpanded: !doctor.isExpanded }
           : doctor
@@ -122,7 +170,7 @@ export default function CheckScreen() {
     }));
   };
 
-  const getStyles = (theme: any) => StyleSheet.create({
+  const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
@@ -286,7 +334,75 @@ export default function CheckScreen() {
       fontFamily: theme.fontFamily.semibold,
       color: theme.colors.white,
     },
-    // Modal styles
+    recommendationSection: {
+      flex: 1,
+    },
+    poliText: {
+      fontSize: theme.fontSizes.b2,
+      fontFamily: theme.fontFamily.regular,
+      color: theme.colors.textSecondary,
+      marginBottom: theme.spacing.sh2,
+    },
+    priceCard: {
+      backgroundColor: theme.colors.light_purple,
+      padding: theme.spacing.sh2,
+      borderRadius: 12,
+      marginBottom: theme.spacing.sh2,
+    },
+    priceLabel: {
+      fontSize: theme.fontSizes.b3,
+      fontFamily: theme.fontFamily.medium,
+      color: theme.colors.primary,
+      marginBottom: theme.spacing.b3,
+    },
+    priceRange: {
+      fontSize: theme.fontSizes.sh2,
+      fontFamily: theme.fontFamily.bold,
+      color: theme.colors.primary,
+    },
+    hospitalSectionTitle: {
+      fontSize: theme.fontSizes.sh2,
+      fontFamily: theme.fontFamily.bold,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.sh2,
+    },
+    hospitalCard: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.white,
+      borderRadius: 12,
+      padding: theme.spacing.b1,
+      marginBottom: theme.spacing.b1,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+    },
+    hospitalCardImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 8,
+      marginRight: theme.spacing.b1,
+    },
+    hospitalCardContent: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    hospitalCardName: {
+      fontSize: theme.fontSizes.b2,
+      fontFamily: theme.fontFamily.semibold,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.b3,
+    },
+    hospitalCardAddress: {
+      fontSize: theme.fontSizes.b3,
+      fontFamily: theme.fontFamily.regular,
+      color: theme.colors.textSecondary,
+      lineHeight: 18,
+    },
     modalHeader: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -351,7 +467,7 @@ export default function CheckScreen() {
       backgroundColor: theme.colors.primary,
       paddingVertical: theme.spacing.b1,
       borderRadius: 12,
-      marginRight: theme.spacing.b3,
+      marginBottom: theme.spacing.b3,
     },
     contactButtonText: {
       fontSize: theme.fontSizes.b2,
@@ -433,23 +549,33 @@ export default function CheckScreen() {
       fontFamily: theme.fontFamily.regular,
       color: theme.colors.text,
     },
+    noDataContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: theme.spacing.sh2,
+    },
+    noDataText: {
+      fontSize: theme.fontSizes.b1,
+      fontFamily: theme.fontFamily.medium,
+      color: theme.colors.textSecondary,
+      textAlign: 'center',
+    },
   });
-
-  // Get styles using the theme
-  const styles = getStyles(theme);
 
   const renderSymptomChecker = () => (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={handleBackFromSymptomInput}
+        >
           <ChevronLeft size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>DokuCek</Text>
         <View style={styles.headerRight} />
       </View>
 
-      {/* Progress Bar */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
           <View style={styles.progressFill} />
@@ -458,7 +584,6 @@ export default function CheckScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Question Section */}
         <View style={styles.questionSection}>
           <Image 
             source={require('@/assets/images/app-logo.png')} 
@@ -470,11 +595,9 @@ export default function CheckScreen() {
           </Text>
         </View>
 
-        {/* Symptoms Section */}
         <View style={styles.symptomsSection}>
           <Text style={styles.sectionTitle}>Gejala Anda</Text>
           
-          {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Search size={20} color={theme.colors.neutral_800} style={styles.searchIcon} />
             <TextInput
@@ -486,7 +609,6 @@ export default function CheckScreen() {
             />
           </View>
 
-          {/* Selected Symptoms Tags */}
           {selectedSymptoms.length > 0 && (
             <View style={styles.selectedSymptomsContainer}>
               {selectedSymptoms.map((symptom) => (
@@ -502,7 +624,6 @@ export default function CheckScreen() {
             </View>
           )}
 
-          {/* Available Symptoms List */}
           <View style={styles.symptomsList}>
             {filteredSymptoms.map((symptom) => (
               <View key={symptom.id} style={styles.symptomItem}>
@@ -519,7 +640,6 @@ export default function CheckScreen() {
         </View>
       </ScrollView>
 
-      {/* Confirm Button */}
       <View style={styles.bottomContainer}>
         <TouchableOpacity
           style={[
@@ -535,83 +655,166 @@ export default function CheckScreen() {
     </SafeAreaView>
   );
 
-  const renderHospitalDetail = () => (
-    <Modal visible={showResult} animationType="slide" presentationStyle="pageSheet">
+  const renderResultScreen = () => (
+    <Modal visible={showResult} animationType="slide" presentationStyle="fullScreen">
       <SafeAreaView style={styles.container}>
-        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => setShowResult(false)}
+          >
+            <ChevronLeft size={24} color={theme.colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>DokuCek</Text>
+          <View style={styles.headerRight} />
+        </View>
+
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: '70%' }]} />
+          </View>
+          <Text style={styles.exitText}>Keluar</Text>
+        </View>
+
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.questionSection}>
+            <Image 
+              source={require('@/assets/images/app-logo.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.questionText}>
+              Berdasarkan gejala yang kamu alami, ini beberapa rekomendasi yang Doku bisa berikan :
+            </Text>
+          </View>
+
+          <View style={styles.recommendationSection}>
+            <Text style={styles.sectionTitle}>Rekomendasi Poli</Text>
+            <Text style={styles.poliText}>Poli Penyakit dalam</Text>
+            
+            <View style={styles.priceCard}>
+              <Text style={styles.priceLabel}>Kisaran Harga</Text>
+              <Text style={styles.priceRange}>Rp.100.000 - Rp.150.000</Text>
+            </View>
+
+            <Text style={styles.hospitalSectionTitle}>Rekomendasi Fasilitas Kesehatan</Text>
+            
+            {mockHospitals.map((hospital) => (
+              <TouchableOpacity
+                key={hospital.id}
+                style={styles.hospitalCard}
+                onPress={() => handleHospitalPress(hospital)}
+              >
+                <Image
+                  source={{ uri: hospital.image }}
+                  style={styles.hospitalCardImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.hospitalCardContent}>
+                  <Text style={styles.hospitalCardName}>{hospital.name}</Text>
+                  <Text style={styles.hospitalCardAddress}>{hospital.address}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity 
+            style={styles.confirmButton}
+            onPress={handleBackToHome}
+          >
+            <Text style={styles.confirmButtonText}>Kembali ke Beranda</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </Modal>
+  );
+
+  const renderHospitalDetail = () => (
+    <Modal 
+      visible={showHospitalDetail} 
+      animationType="slide" 
+      presentationStyle="pageSheet"
+      onRequestClose={handleCloseHospitalDetail}
+    >
+      <SafeAreaView style={styles.container}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalHeaderTitle}>Detail Rumah Sakit</Text>
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={() => setShowResult(false)}
+            onPress={handleCloseHospitalDetail}
           >
             <X size={24} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-          {/* Hospital Image */}
-          <View style={styles.hospitalImageContainer}>
-            <Image
-              source={{ uri: hospitalData.image }}
-              style={styles.hospitalImage}
-              resizeMode="cover"
-            />
-            <View style={styles.distanceTag}>
-              <Text style={styles.distanceText}>{hospitalData.distance}</Text>
-            </View>
-          </View>
-
-          {/* Hospital Info */}
-          <View style={styles.hospitalInfo}>
-            <Text style={styles.hospitalName}>{hospitalData.name}</Text>
-            <Text style={styles.hospitalAddress}>{hospitalData.address}</Text>
-            
-            <TouchableOpacity style={styles.contactButton}>
-              <Phone size={20} color="white" />
-              <Text style={styles.contactButtonText}>Hubungi Fasilitas Kesehatan</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Doctors List */}
-          <View style={styles.doctorsSection}>
-            <Text style={styles.doctorsTitle}>Daftar Dokter</Text>
-            <Text style={styles.doctorsSubtitle}>Poli Penyakit dalam</Text>
-            
-            {hospitalData.doctors.map((doctor) => (
-              <View key={doctor.id} style={styles.doctorCard}>
-                <TouchableOpacity
-                  style={styles.doctorHeader}
-                  onPress={() => toggleDoctorExpansion(doctor.id)}
-                >
-                  <View style={styles.doctorInfo}>
-                    <View style={styles.doctorIcon}>
-                      <User size={20} color={theme.colors.primary} />
-                    </View>
-                    <Text style={styles.doctorName}>{doctor.name}</Text>
-                  </View>
-                  {doctor.isExpanded ? (
-                    <ChevronUp size={20} color={theme.colors.neutral_800} />
-                  ) : (
-                    <ChevronDown size={20} color={theme.colors.neutral_800} />
-                  )}
-                </TouchableOpacity>
-                
-                {doctor.isExpanded && (
-                  <View style={styles.scheduleContainer}>
-                    <Text style={styles.scheduleTitle}>Jam Praktek</Text>
-                    {doctor.schedule.map((schedule, index) => (
-                      <View key={index} style={styles.scheduleRow}>
-                        <Text style={styles.scheduleDay}>{schedule.day}</Text>
-                        <Text style={styles.scheduleHours}>{schedule.hours}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
+        {selectedHospital ? (
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.hospitalImageContainer}>
+              <Image
+                source={{ uri: selectedHospital.image }}
+                style={styles.hospitalImage}
+                resizeMode="cover"
+              />
+              <View style={styles.distanceTag}>
+                <Text style={styles.distanceText}>{selectedHospital.distance}</Text>
               </View>
-            ))}
+            </View>
+
+            <View style={styles.hospitalInfo}>
+              <Text style={styles.hospitalName}>{selectedHospital.name}</Text>
+              <Text style={styles.hospitalAddress}>{selectedHospital.address}</Text>
+              
+              <TouchableOpacity style={styles.contactButton}>
+                <Phone size={20} color="white" />
+                <Text style={styles.contactButtonText}>Hubungi Fasilitas Kesehatan</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.doctorsSection}>
+              <Text style={styles.doctorsTitle}>Daftar Dokter</Text>
+              <Text style={styles.doctorsSubtitle}>Poli Penyakit dalam</Text>
+              
+              {selectedHospital.doctors.map((doctor) => (
+                <View key={doctor.id} style={styles.doctorCard}>
+                  <TouchableOpacity
+                    style={styles.doctorHeader}
+                    onPress={() => toggleDoctorExpansion(doctor.id)}
+                  >
+                    <View style={styles.doctorInfo}>
+                      <View style={styles.doctorIcon}>
+                        <User size={20} color={theme.colors.primary} />
+                      </View>
+                      <Text style={styles.doctorName}>{doctor.name}</Text>
+                    </View>
+                    {doctor.isExpanded ? (
+                      <ChevronUp size={20} color={theme.colors.neutral_800} />
+                    ) : (
+                      <ChevronDown size={20} color={theme.colors.neutral_800} />
+                    )}
+                  </TouchableOpacity>
+                  
+                  {doctor.isExpanded && (
+                    <View style={styles.scheduleContainer}>
+                      <Text style={styles.scheduleTitle}>Jam Praktek</Text>
+                      {doctor.schedule.map((schedule, index) => (
+                        <View key={index} style={styles.scheduleRow}>
+                          <Text style={styles.scheduleDay}>{schedule.day}</Text>
+                          <Text style={styles.scheduleHours}>{schedule.hours}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        ) : (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>Data rumah sakit tidak tersedia</Text>
           </View>
-        </ScrollView>
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -619,6 +822,7 @@ export default function CheckScreen() {
   return (
     <>
       {renderSymptomChecker()}
+      {renderResultScreen()}
       {renderHospitalDetail()}
     </>
   );
