@@ -35,6 +35,18 @@ const lightColors = {
   success: colors['light-green'],
   warning: colors['light-purple'],
   error: colors['light-rose'],
+  purple: colors['purple'],
+  dark_blue: colors['dark-blue'],
+  light_purple: colors['light-purple'],
+  light_rose: colors['light-rose'],
+  light_green: colors['light-green'],
+  cream: colors['cream'],
+  neutral_200: colors['neutral-200'],
+  neutral_300: colors['neutral-300'],
+  neutral_500: colors['neutral-500'],
+  neutral_800: colors['neutral-800'],
+  black: '#000000',
+  white: '#FFFFFF'
 };
 
 export const lightTheme = {
