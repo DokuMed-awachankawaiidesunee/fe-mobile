@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { usePathname, router } from 'expo-router';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import type { SFSymbols6_0 } from '@/types';
 
 type HeaderProps = {
   title?: string;
@@ -36,6 +34,11 @@ export default function Header({ title, showBackButton = false }: HeaderProps) {
       paddingVertical: theme.spacing.b2,
       paddingHorizontal: theme.spacing.b2,
     },
+    backIcon: {
+      width: 24,
+      height: 24,
+      tintColor: theme.colors.text, 
+    },
     title: {
       fontSize: theme.fontSizes.b1,
       fontFamily: theme.fontFamily.bold,
@@ -51,10 +54,10 @@ export default function Header({ title, showBackButton = false }: HeaderProps) {
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <IconSymbol 
-            name={'chevron.left' as SFSymbols6_0} 
-            size={24} 
-            color={theme.colors.text} 
+          <Image
+            source={require('@/assets/images/arrow-back.png')}
+            style={styles.backIcon}
+            resizeMode="contain"
           />
         </TouchableOpacity>
       )}

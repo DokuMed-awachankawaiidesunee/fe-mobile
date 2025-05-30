@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import Header from '@/components/Header';
 import type { SFSymbols6_0 } from '@/types';
 
 export default function ProfileScreen() {
@@ -32,18 +31,6 @@ export default function ProfileScreen() {
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-    },
-    headerContainer: {
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    headerTitle: {
-      fontSize: theme.fontSizes.sh3,
-      fontFamily: theme.fontFamily.semibold,
-      color: theme.colors.text,
     },
     content: {
       flex: 1,
@@ -100,11 +87,6 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Profil</Text>
-      </View>
-
       <ScrollView 
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100 }} 

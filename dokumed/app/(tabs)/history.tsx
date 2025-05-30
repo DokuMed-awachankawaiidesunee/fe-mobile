@@ -189,7 +189,7 @@ export default function HistoryScreen() {
 const styles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F6FF',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -232,9 +232,11 @@ const styles = (theme: any) => StyleSheet.create({
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.7,
     shadowRadius: 2,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   historyHeader: {
     flexDirection: 'row',
