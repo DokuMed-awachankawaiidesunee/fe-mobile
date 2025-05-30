@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Navbar from '@/components/Navbar';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +28,19 @@ const adsData = [
 ];
 
 export default function HomeScreen() {
+  // Fungsi navigasi
+  const navigateToCheck = () => {
+    router.push('/check');
+  };
+  
+  const navigateToMedicine = () => {
+    router.push('/medicine');
+  };
+  
+  const navigateToHistory = () => {
+    router.push('/history');
+  };
+
   const renderAdItem = ({ item }: { item: typeof adsData[0] }) => (
     <TouchableOpacity style={styles.adContainer}>
       <Image source={item.image} style={styles.adImage} resizeMode="cover" />
@@ -53,14 +66,20 @@ export default function HomeScreen() {
             </View>
           </View>
           
-          <TouchableOpacity style={styles.checkButton}>
+          <TouchableOpacity 
+            style={styles.checkButton}
+            onPress={navigateToCheck}
+          >
             <Text style={styles.checkButtonText}>Cek Keadaan Mu Sekarang</Text>
           </TouchableOpacity>
         </View>
 
         {/* Feature Cards */}
         <View style={styles.featuresSection}>
-          <TouchableOpacity style={[styles.featureCard, styles.purpleCard]}>
+          <TouchableOpacity 
+            style={[styles.featureCard, styles.purpleCard]}
+            onPress={navigateToMedicine}
+          >
             <Image 
               source={require('@/assets/images/doku-pharm.png')} 
               style={styles.featureIcon}
@@ -69,7 +88,10 @@ export default function HomeScreen() {
             <Text style={styles.featureTitle}>Telusuri{'\n'}Alternatif Obat</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={[styles.featureCard, styles.greenCard]}>
+          <TouchableOpacity 
+            style={[styles.featureCard, styles.greenCard]}
+            onPress={navigateToHistory}
+          >
             <Image 
               source={require('@/assets/images/doku-hist.png')} 
               style={styles.featureIcon}
