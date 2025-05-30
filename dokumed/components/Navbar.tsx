@@ -16,7 +16,7 @@ export default function Navbar() {
     {
       name: 'DokuCheck',
       icon: require('../assets/images/doku-check-icon.png'),
-      route: '/chatbot'
+      route: '/history'
     },
     {
       name: 'Profil',
