@@ -1,22 +1,40 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Navbar from '@/components/Navbar';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import SplashScreen from '@/components/SplashScreen'; // Komponen splash screen manual
+import SplashScreen from '@/components/SplashScreen';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const [showSplash, setShowSplash] = useState(true);
+  const router = useRouter();
 
-  // Timer splash 1.5 detik (atau tunggu animasi selesai)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 15000); // ⏱️ ganti durasi sesuai kebutuhan
-    return () => clearTimeout(timer);
-  }, []);
+    const checkFirstLaunch = async () => {
+      try {
+        const hasLaunched = await AsyncStorage.getItem('hasLaunched');
+        
+        if (hasLaunched === null) {
+          const timer = setTimeout(() => {
+            setShowSplash(false);
+            router.replace('/landing');
+            AsyncStorage.setItem('hasLaunched', 'true');
+          }, 15000);
+          return () => clearTimeout(timer);
+        } else {
+          setShowSplash(false);
+        }
+      } catch (error) {
+        console.log('Error checking first launch:', error);
+        setShowSplash(false);
+      }
+    };
+
+    checkFirstLaunch();
+  }, [router]);
 
   const styles = StyleSheet.create({
     container: {
@@ -36,11 +54,10 @@ export default function TabLayout() {
           tabBarStyle: { display: 'none' },
         }}
       >
-        <Tabs.Screen name="index" options={{ title: 'Beranda' }} />
-        <Tabs.Screen name="medicine" options={{ title: 'Obat' }} />
-        <Tabs.Screen name="symptom" options={{ title: 'Gejala' }} />
-        <Tabs.Screen name="chatbot" options={{ title: 'DokuHelp' }} />
-        <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
+        <Tabs.Screen name="index" options={{ title: 'Home' }} />
+        <Tabs.Screen name="medicine" options={{ title: 'DokuPharm' }} />
+        <Tabs.Screen name="symptom" options={{ title: 'DokuCheck' }} />
+        <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
       </Tabs>
       <Navbar />
     </View>

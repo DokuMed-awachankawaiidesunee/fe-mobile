@@ -29,7 +29,7 @@ const adsData = [
 
 export default function HomeScreen() {
   const navigateToCheck = () => {
-    router.push('/symtomp');
+    router.push('/symptom');
   };
   
   const navigateToMedicine = () => {

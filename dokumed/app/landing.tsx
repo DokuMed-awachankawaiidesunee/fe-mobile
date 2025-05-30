@@ -1,3 +1,4 @@
+import { Stack } from 'expo-router';
 import React from 'react';
 import {
   View,
@@ -15,11 +16,11 @@ export default function Landing() {
   const { theme } = useTheme();
 
   const handleLogin = () => {
-    router.replace('/');  // Navigate to main tab layout
+    router.replace('/login');  
   };
 
   const handleRegister = () => {
-    router.push('/register');  // Navigate to register page
+    router.push('/register');  
   };
 
   const styles = StyleSheet.create({
@@ -87,45 +88,49 @@ export default function Landing() {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <Image 
-            source={require('@/assets/images/app-logo.png')} 
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>
-            DokuMed, sehat kini, sehat nanti!
-          </Text>
-          <Text style={styles.subtitle}>
-            Masuk ke akun Anda untuk menikmati semua fitur DokuMed. Hidup lebih sehat dan teratur!
-          </Text>
-        </View>
-        
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.loginButton} 
-            onPress={handleLogin}
-          >
-            <Text style={styles.loginButtonText}>
-              Masuk
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
+        <View style={styles.content}>
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('@/assets/images/app-logo.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>
+              DokuMed, sehat kini, sehat nanti!
             </Text>
-          </TouchableOpacity>
+            <Text style={styles.subtitle}>
+              Masuk ke akun Anda untuk menikmati semua fitur DokuMed. Hidup lebih sehat dan teratur!
+            </Text>
+          </View>
           
-          <TouchableOpacity 
-            style={styles.registerButton} 
-            onPress={handleRegister}
-          >
-            <Text style={styles.registerButtonText}>
-              Daftar
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.loginButton} 
+              onPress={handleLogin}
+            >
+              <Text style={styles.loginButtonText}>
+                Masuk
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.registerButton} 
+              onPress={handleRegister}
+            >
+              <Text style={styles.registerButtonText}>
+                Daftar
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </>
   );
 }
