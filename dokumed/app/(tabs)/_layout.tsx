@@ -7,6 +7,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import type { SFSymbols6_0 } from '@/types';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -20,7 +21,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
@@ -29,15 +29,36 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Beranda',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name={"house.fill" as SFSymbols6_0} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="medicine"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Obat',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name={"pills.fill" as SFSymbols6_0} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="symptom"
+        options={{
+          title: 'Gejala',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name={"heart.text.square.fill" as SFSymbols6_0} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chatbot"
+        options={{
+          title: 'DokuHelp',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name={"bubble.left.fill" as SFSymbols6_0} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name={"person.crop.circle.fill" as SFSymbols6_0} color={color} />,
         }}
       />
     </Tabs>
