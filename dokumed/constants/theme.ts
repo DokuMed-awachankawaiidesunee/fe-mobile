@@ -1,4 +1,3 @@
-// theme.ts
 import { moderateScale } from 'react-native-size-matters';
 
 export const FontFamily = {
@@ -10,34 +9,32 @@ export const FontFamily = {
   black: 'Figtree_900Black',
 };
 
-const lightColors = {
-  primary: '#007AFF',
-  secondary: '#5856D6',
-  background: '#FFFFFF',
-  surface: '#F2F2F7',
-  card: '#FFFFFF',
-  text: '#000000',
-  textSecondary: '#8E8E93',
-  border: '#C6C6C8',
-  notification: '#FF3B30',
-  success: '#34C759',
-  warning: '#FF9500',
-  error: '#FF3B30',
+const colors = {
+  'dark-blue': '#02273A',
+  'purple': '#59539D',
+  'light-purple': '#DEBEEF',
+  'light-rose': '#FBDFD3',
+  'light-green': '#C6DED0',
+  'cream': '#FDFAF1',
+  'neutral-200': '#F1F1F1',
+  'neutral-300': '#F5F5F5',
+  'neutral-500': '#D9D9D9',
+  'neutral-800': '#8F8F8F',
 };
 
-export const darkColors = {
-  primary: '#0A84FF',
-  secondary: '#5E5CE6',
-  background: '#000000',
-  surface: '#1C1C1E',
-  card: '#1C1C1E',
-  text: '#FFFFFF',
-  textSecondary: '#8E8E93',
-  border: '#38383A',
-  notification: '#FF453A',
-  success: '#30D158',
-  warning: '#FF9F0A',
-  error: '#FF453A',
+const lightColors = {
+  primary: colors['purple'],
+  secondary: colors['light-purple'],
+  background: colors['cream'],
+  surface: colors['neutral-300'],
+  card: colors['neutral-200'],
+  text: colors['dark-blue'],
+  textSecondary: colors['neutral-800'],
+  border: colors['neutral-500'],
+  notification: colors['light-rose'],
+  success: colors['light-green'],
+  warning: colors['light-purple'],
+  error: colors['light-rose'],
 };
 
 export const lightTheme = {
@@ -64,14 +61,6 @@ export const lightTheme = {
     xxl: moderateScale(24),
     xxxl: moderateScale(28),
   },
-  fontFamily: FontFamily,
-};
-
-export const darkTheme = {
-  dark: true,
-  colors: darkColors,
-  fontSizes: lightTheme.fontSizes,
-  spacing: lightTheme.spacing,
   fontFamily: FontFamily,
 };
 

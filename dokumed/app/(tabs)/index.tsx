@@ -1,30 +1,30 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function ExampleScreen() {
   const { theme } = useTheme();
-
+  
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
       padding: theme.spacing.lg,
-    },
+    } as ViewStyle,
     header: {
       marginBottom: theme.spacing.xl,
-    },
+    } as ViewStyle,
     title: {
       fontSize: theme.fontSizes.xxl,
       fontFamily: theme.fontFamily.bold,
       color: theme.colors.text,
       marginBottom: theme.spacing.xs,
-    },
+    } as TextStyle,
     subtitle: {
       fontSize: theme.fontSizes.body,
       fontFamily: theme.fontFamily.regular,
       color: theme.colors.textSecondary,
-    },
+    } as TextStyle,
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: 12,
@@ -32,19 +32,19 @@ export default function ExampleScreen() {
       marginBottom: theme.spacing.md,
       borderWidth: 1,
       borderColor: theme.colors.border,
-    },
+    } as ViewStyle,
     cardTitle: {
       fontSize: theme.fontSizes.lg,
       fontFamily: theme.fontFamily.semibold,
       color: theme.colors.text,
       marginBottom: theme.spacing.xs,
-    },
+    } as TextStyle,
     cardText: {
       fontSize: theme.fontSizes.sm,
       fontFamily: theme.fontFamily.regular,
       color: theme.colors.textSecondary,
       lineHeight: 20,
-    },
+    } as TextStyle,
     button: {
       backgroundColor: theme.colors.primary,
       borderRadius: 8,
@@ -52,12 +52,12 @@ export default function ExampleScreen() {
       paddingHorizontal: theme.spacing.xl,
       alignItems: 'center',
       marginTop: theme.spacing.lg,
-    },
+    } as ViewStyle,
     buttonText: {
       fontSize: theme.fontSizes.body,
       fontFamily: theme.fontFamily.semibold,
-      color: '#FFFFFF',
-    },
+      color: theme.colors.background, 
+    } as TextStyle,
     secondaryButton: {
       backgroundColor: 'transparent',
       borderWidth: 1,
@@ -67,12 +67,12 @@ export default function ExampleScreen() {
       paddingHorizontal: theme.spacing.xl,
       alignItems: 'center',
       marginTop: theme.spacing.md,
-    },
+    } as ViewStyle,
     secondaryButtonText: {
       fontSize: theme.fontSizes.body,
       fontFamily: theme.fontFamily.medium,
       color: theme.colors.primary,
-    },
+    } as TextStyle,
     badge: {
       backgroundColor: theme.colors.success,
       paddingHorizontal: theme.spacing.xs,
@@ -80,32 +80,35 @@ export default function ExampleScreen() {
       borderRadius: 12,
       alignSelf: 'flex-start',
       marginBottom: theme.spacing.md,
-    },
+    } as ViewStyle,
     badgeText: {
       fontSize: theme.fontSizes.xs,
       fontFamily: theme.fontFamily.medium,
-      color: '#FFFFFF',
-    },
+      color: theme.colors.text,
+    } as TextStyle,
     lightText: {
       fontSize: theme.fontSizes.sm,
       fontFamily: theme.fontFamily.light,
       color: theme.colors.textSecondary,
       fontStyle: 'italic',
-    },
+    } as TextStyle,
     heavyText: {
       fontSize: theme.fontSizes.md,
       fontFamily: theme.fontFamily.black,
       color: theme.colors.text,
       textAlign: 'center',
-    },
+    } as TextStyle,
   });
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Custom Theme Demo</Text>
         <Text style={styles.subtitle}>
-          This shows how to use your custom theme with Figtree fonts
+          Using the new color palette
         </Text>
       </View>
 
