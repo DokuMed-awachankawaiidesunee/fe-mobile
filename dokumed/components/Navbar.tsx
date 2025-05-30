@@ -10,17 +10,17 @@ export default function Navbar() {
   const tabs = [
     {
       name: 'Beranda',
-      icon: require('../assets/images/home.svg'),
+      icon: require('../assets/images/home-icon.png'),
       route: '/'
     },
     {
-      name: 'DokuHelp',
-      icon: require('../assets/images/chat.svg'),
+      name: 'DokuCheck',
+      icon: require('../assets/images/doku-check-icon.png'),
       route: '/chatbot'
     },
     {
       name: 'Profil',
-      icon: require('../assets/images/profile.svg'),
+      icon: require('../assets/images/profile-icon.png'),
       route: '/profile'
     }
   ];
@@ -38,8 +38,8 @@ export default function Navbar() {
       backgroundColor: 'white',
       borderTopWidth: 1,
       borderTopColor: theme.colors.border,
-      paddingVertical: 10,
-      paddingBottom: 20, 
+      paddingVertical: 20,
+      paddingBottom: 30, 
     },
     tab: {
       flex: 1,
@@ -47,15 +47,15 @@ export default function Navbar() {
       justifyContent: 'center',
     },
     tabIcon: {
-      width: 24,
-      height: 24,
+      width: 26,
+      height: 26,
       tintColor: theme.colors.textSecondary, 
     },
     activeTabIcon: {
       tintColor: theme.colors.primary, 
     },
     tabText: {
-      fontSize: 12,
+      fontSize: theme.fontSizes.b3,
       fontFamily: theme.fontFamily.medium,
       color: theme.colors.textSecondary,
       marginTop: 4,
