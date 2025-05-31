@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Modal,
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -146,6 +147,8 @@ const severityOptions = [
 
 export default function CheckScreen() {
   const { theme } = useTheme();
+
+  const bgImage = require('@/assets/images/bg-symptom.png');
   
   // State for the initial text input
   const [symptomText, setSymptomText] = useState('');
@@ -316,7 +319,12 @@ export default function CheckScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+    },
+    backgroundImage: {
+      flex: 1,
+      width: '100%',
+      height: '100%',
+      position: 'absolute',
     },
     header: {
       flexDirection: 'row',
@@ -778,6 +786,10 @@ export default function CheckScreen() {
       style={{ flex: 1 }}
     >
       <SafeAreaView style={styles.container}>
+          <ImageBackground 
+          source={bgImage}
+          style={styles.backgroundImage}
+        ></ImageBackground>
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}

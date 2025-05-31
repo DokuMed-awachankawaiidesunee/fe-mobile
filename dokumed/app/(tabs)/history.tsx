@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Modal,
   Pressable,
+  ImageBackground,
 } from 'react-native';
 import { ChevronDown, ChevronUp, X } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
@@ -83,6 +84,9 @@ export default function HistoryScreen() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['2']));
   const [modalVisible, setModalVisible] = useState(false);
   const [currentCode, setCurrentCode] = useState('');
+  
+  // Background image dimensions
+  const bgImage = require('@/assets/images/bg-hist.png');
 
   const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedItems);
@@ -101,7 +105,7 @@ export default function HistoryScreen() {
 
   const handleCheckSymptoms = () => {
     // Navigate to symptom screen
-    navigation.navigate('symptom' as never);
+    navigation.navigate('Symptom' as never);
   };
 
   const hexToRgba = (hex: string, opacity: number) => {
@@ -194,23 +198,28 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles(theme).container}>
-      <ScrollView style={styles(theme).content} showsVerticalScrollIndicator={false}>
-        {/* Header Section */}
-        <View style={styles(theme).header}>
-          <Text style={styles(theme).title}>Lihat Riwayat{'\n'}MedisMu!</Text>
-          <TouchableOpacity 
-            style={styles(theme).checkSymptomsButton}
-            onPress={handleCheckSymptoms}
-          >
-            <Text style={styles(theme).checkSymptomsButtonText}>Cek Gejala</Text>
-          </TouchableOpacity>
-        </View>
+      <ImageBackground 
+        source={bgImage}
+        style={styles(theme).backgroundImage}
+      >
+        <ScrollView style={styles(theme).content} showsVerticalScrollIndicator={false}>
+          {/* Header Section */}
+          <View style={styles(theme).header}>
+            <Text style={styles(theme).title}>Lihat Riwayat{'\n'}MedisMu!</Text>
+            <TouchableOpacity 
+              style={styles(theme).checkSymptomsButton}
+              onPress={handleCheckSymptoms}
+            >
+              <Text style={styles(theme).checkSymptomsButtonText}>Cek Gejala</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* History List */}
-        <View style={styles(theme).historyList}>
-          {historyData.map(renderHistoryItem)}
-        </View>
-      </ScrollView>
+          {/* History List */}
+          <View style={styles(theme).historyList}>
+            {historyData.map(renderHistoryItem)}
+          </View>
+        </ScrollView>
+      </ImageBackground>
 
       {/* Code Modal */}
       <Modal
@@ -243,7 +252,11 @@ export default function HistoryScreen() {
 const styles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   content: {
     flex: 1,
