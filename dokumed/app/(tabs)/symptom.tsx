@@ -80,7 +80,7 @@ const mockHospitals: Hospital[] = [
     name: 'Klinik Utama Jasmine MQ Medika',
     address: 'Jl. Dayang Sumbi No.10, Lb. Siliwangi, Kecamatan Coblong, Kota Bandung, Jawa Barat 40132',
     distance: '2.4 kilometer dari Anda',
-    image: '../../assets/images/jasmine-sq.png',
+    image: '../../assets/images/app-logo.png',
     phone: '+62-22-1234567',
     doctors: [
       {
@@ -238,10 +238,21 @@ export default function CheckScreen() {
 
   // Handle back to home
   const handleBackToHome = () => {
+    // Reset semua state ke nilai awalnya
+    setSymptomText('');
+    setShowTextInput(true);
+    setShowPredictedSymptoms(false);
+    setSelectedSymptoms([]);
+    setSearchText('');
+    setShowSymptomSearch(false);
+    setShowDurationSelection(false);
+    setSelectedDuration(null);
+    setShowSeveritySelection(false);
+    setSelectedSeverity(null);
     setShowResult(false);
     setShowHospitalDetail(false);
     setSelectedHospital(null);
-    router.replace('/');
+    router.push('/');
   };
 
   // Handle hospital press
