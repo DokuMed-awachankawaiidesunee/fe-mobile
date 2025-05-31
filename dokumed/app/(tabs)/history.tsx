@@ -7,9 +7,12 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
+  Modal,
+  Pressable,
 } from 'react-native';
-import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import { ChevronDown, ChevronUp, X } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
+import { useNavigation } from '@react-navigation/native';
 
 interface HistoryItem {
   id: string;
@@ -19,6 +22,7 @@ interface HistoryItem {
   symptoms?: string[];
   recommendedClinic?: string;
   hasDetails?: boolean;
+  code?: string;
 }
 
 const historyData: HistoryItem[] = [
@@ -30,6 +34,7 @@ const historyData: HistoryItem[] = [
     symptoms: ['Sakit kepala', 'Demam', 'Mual'],
     recommendedClinic: 'Poli Umum',
     hasDetails: true,
+    code: '1235688',
   },
   {
     id: '2',
@@ -39,37 +44,45 @@ const historyData: HistoryItem[] = [
     symptoms: ['Batuk', 'Pilek', 'Sakit tenggorokan'],
     recommendedClinic: 'Poli Paru',
     hasDetails: true,
+    code: '4567892',
   },
   {
     id: '3',
     date: '27 Mei 2025',
     time: '17:00 WIB',
     hasDetails: false,
+    code: '7891234',
   },
   {
     id: '4',
     date: '27 Mei 2025',
     time: '17:00 WIB',
     hasDetails: false,
+    code: '3456789',
   },
   {
     id: '5',
     date: '27 Mei 2025',
     time: '17:00 WIB',
     hasDetails: false,
+    code: '6789123',
   },
   {
     id: '6',
     date: '27 Mei 2025',
     time: '17:00 WIB',
     hasDetails: false,
+    code: '9123456',
   },
 ];
 
 export default function HistoryScreen() {
   const { theme } = useTheme();
-
+  const navigation = useNavigation();
+  
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['2']));
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentCode, setCurrentCode] = useState('');
 
   const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedItems);
@@ -79,6 +92,16 @@ export default function HistoryScreen() {
       newExpanded.add(id);
     }
     setExpandedItems(newExpanded);
+  };
+
+  const handleShowCode = (code: string) => {
+    setCurrentCode(code);
+    setModalVisible(true);
+  };
+
+  const handleCheckSymptoms = () => {
+    // Navigate to symptom screen
+    navigation.navigate('symptom' as never);
   };
 
   const hexToRgba = (hex: string, opacity: number) => {
@@ -157,7 +180,10 @@ export default function HistoryScreen() {
               </View>
             </View>
             
-            <TouchableOpacity style={styles(theme).showCodeButton}>
+            <TouchableOpacity 
+              style={styles(theme).showCodeButton}
+              onPress={() => item.code && handleShowCode(item.code)}
+            >
               <Text style={styles(theme).showCodeButtonText}>Tampilkan Kode</Text>
             </TouchableOpacity>
           </View>
@@ -172,7 +198,10 @@ export default function HistoryScreen() {
         {/* Header Section */}
         <View style={styles(theme).header}>
           <Text style={styles(theme).title}>Lihat Riwayat{'\n'}MedisMu!</Text>
-          <TouchableOpacity style={styles(theme).checkSymptomsButton}>
+          <TouchableOpacity 
+            style={styles(theme).checkSymptomsButton}
+            onPress={handleCheckSymptoms}
+          >
             <Text style={styles(theme).checkSymptomsButtonText}>Cek Gejala</Text>
           </TouchableOpacity>
         </View>
@@ -182,6 +211,31 @@ export default function HistoryScreen() {
           {historyData.map(renderHistoryItem)}
         </View>
       </ScrollView>
+
+      {/* Code Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles(theme).modalOverlay}>
+          <View style={styles(theme).modalContent}>
+            <View style={styles(theme).modalHeader}>
+              <Text style={styles(theme).modalTitle}>Kode Anda</Text>
+              <Pressable onPress={() => setModalVisible(false)} style={styles(theme).closeButton}>
+                <X size={24} color="#000" />
+              </Pressable>
+            </View>
+
+            <Text style={styles(theme).codeText}>{currentCode}</Text>
+            
+            <Text style={styles(theme).expireText}>
+              Expire : 20 : 00 : 59
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -331,5 +385,57 @@ const styles = (theme: any) => StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000',
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    padding: 5,
+  },
+  codeText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: theme.colors.purple || '#6366F1',
+    marginVertical: 20,
+  },
+  expireText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
   },
 });
