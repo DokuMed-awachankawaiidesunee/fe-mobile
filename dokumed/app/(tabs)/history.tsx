@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   Modal,
   Pressable,
-  ImageBackground,
 } from 'react-native';
 import { ChevronDown, ChevronUp, X } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
@@ -29,7 +28,7 @@ interface HistoryItem {
 const historyData: HistoryItem[] = [
   {
     id: '1',
-    date: '27 Mei 2025',
+    date: '29 Mei 2025',
     time: '17:00 WIB',
     priceRange: '150.000 - 250.000',
     symptoms: ['Sakit kepala', 'Demam', 'Mual'],
@@ -39,8 +38,8 @@ const historyData: HistoryItem[] = [
   },
   {
     id: '2',
-    date: '27 Mei 2025',
-    time: '17:00 WIB',
+    date: '20 Mei 2025',
+    time: '10:00 WIB',
     priceRange: '200.000 - 300.000',
     symptoms: ['Batuk', 'Pilek', 'Sakit tenggorokan'],
     recommendedClinic: 'Poli Paru',
@@ -49,29 +48,29 @@ const historyData: HistoryItem[] = [
   },
   {
     id: '3',
-    date: '27 Mei 2025',
-    time: '17:00 WIB',
+    date: '1 Maret 2025',
+    time: '3:00 WIB',
     hasDetails: false,
     code: '7891234',
   },
   {
     id: '4',
-    date: '27 Mei 2025',
-    time: '17:00 WIB',
+    date: '3 Februari 2025',
+    time: '18:00 WIB',
     hasDetails: false,
     code: '3456789',
   },
   {
     id: '5',
-    date: '27 Mei 2025',
-    time: '17:00 WIB',
+    date: '27 Oktober 2024',
+    time: '17:20 WIB',
     hasDetails: false,
     code: '6789123',
   },
   {
     id: '6',
-    date: '27 Mei 2025',
-    time: '17:00 WIB',
+    date: '2 Mei 2024',
+    time: '19:00 WIB',
     hasDetails: false,
     code: '9123456',
   },
@@ -84,9 +83,6 @@ export default function HistoryScreen() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['2']));
   const [modalVisible, setModalVisible] = useState(false);
   const [currentCode, setCurrentCode] = useState('');
-  
-  // Background image dimensions
-  const bgImage = require('@/assets/images/bg-hist.png');
 
   const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedItems);
@@ -105,7 +101,7 @@ export default function HistoryScreen() {
 
   const handleCheckSymptoms = () => {
     // Navigate to symptom screen
-    navigation.navigate('Symptom' as never);
+    navigation.navigate('symptom' as never);
   };
 
   const hexToRgba = (hex: string, opacity: number) => {
@@ -198,28 +194,23 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles(theme).container}>
-      <ImageBackground 
-        source={bgImage}
-        style={styles(theme).backgroundImage}
-      >
-        <ScrollView style={styles(theme).content} showsVerticalScrollIndicator={false}>
-          {/* Header Section */}
-          <View style={styles(theme).header}>
-            <Text style={styles(theme).title}>Lihat Riwayat{'\n'}MedisMu!</Text>
-            <TouchableOpacity 
-              style={styles(theme).checkSymptomsButton}
-              onPress={handleCheckSymptoms}
-            >
-              <Text style={styles(theme).checkSymptomsButtonText}>Cek Gejala</Text>
-            </TouchableOpacity>
-          </View>
+      <ScrollView style={styles(theme).content} showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View style={styles(theme).header}>
+          <Text style={styles(theme).title}>Lihat Riwayat{'\n'}MedisMu!</Text>
+          <TouchableOpacity 
+            style={styles(theme).checkSymptomsButton}
+            onPress={handleCheckSymptoms}
+          >
+            <Text style={styles(theme).checkSymptomsButtonText}>Cek Gejala</Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* History List */}
-          <View style={styles(theme).historyList}>
-            {historyData.map(renderHistoryItem)}
-          </View>
-        </ScrollView>
-      </ImageBackground>
+        {/* History List */}
+        <View style={styles(theme).historyList}>
+          {historyData.map(renderHistoryItem)}
+        </View>
+      </ScrollView>
 
       {/* Code Modal */}
       <Modal
@@ -252,11 +243,7 @@ export default function HistoryScreen() {
 const styles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-  },
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
