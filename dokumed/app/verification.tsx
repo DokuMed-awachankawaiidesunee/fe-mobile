@@ -14,16 +14,22 @@ import {
   KeyboardAvoidingView,
   Platform,
   NativeSyntheticEvent,
-  TextInputKeyPressEventData
+  TextInputKeyPressEventData,
+  Alert
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Verification() {
   const { theme } = useTheme();
-  const [otp, setOtp] = useState<string[]>(['', '', '', '']);
-  // Definisikan tipe yang benar untuk inputRefs
-  const inputRefs = useRef<Array<TextInput | null>>([null, null, null, null]);
+  const { phone, verifyOtp, authFlow } = useAuth();
+  // 6 digit OTP
+  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Definisikan tipe yang benar untuk inputRefs, sekarang 6 digit
+  const inputRefs = useRef<Array<TextInput | null>>([null, null, null, null, null, null]);
   
   // Timer untuk memfokuskan input pertama saat halaman dimuat
   useEffect(() => {
@@ -40,8 +46,10 @@ export default function Verification() {
     newOtp[index] = value;
     setOtp(newOtp);
     
+    // File: app/verification.tsx (lanjutan)
+
     // Auto-focus ke input berikutnya jika ada nilai
-    if (value !== '' && index < 3 && inputRefs.current[index + 1]) {
+    if (value !== '' && index < 5 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -58,14 +66,52 @@ export default function Verification() {
   };
 
   // Fungsi untuk verifikasi OTP
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     // Cek apakah semua digit OTP sudah diisi
-    if (otp.every(digit => digit !== '')) {
-      // Navigasi ke halaman data umum
-      router.push('/data-general');
-    } else {
-      alert('Silakan masukkan kode verifikasi lengkap');
+    if (!otp.every(digit => digit !== '')) {
+      Alert.alert('Error', 'Silakan masukkan kode verifikasi lengkap');
+      return;
     }
+    
+    try {
+      setIsLoading(true);
+      const otpCode = otp.join('');
+      const isVerified = await verifyOtp(otpCode);
+      
+      if (isVerified) {
+        // Navigate based on current auth flow (login or register)
+        if (authFlow === 'register') {
+          // Registration flow - go to data-general
+          router.push('/data-general');
+        } else {
+          // Login flow - go to password
+          router.push({
+            pathname: '/password'
+          } as any);
+        }
+      } else {
+        Alert.alert('Error', 'Kode verifikasi tidak valid');
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Verifikasi gagal';
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Format phone number for display
+  const formatPhoneDisplay = (phone: string) => {
+    if (!phone) return '';
+    
+    // Keep first 2 digits and last 2 digits visible, mask the rest
+    if (phone.length <= 4) return phone;
+    
+    const firstPart = phone.substring(0, 2);
+    const lastPart = phone.substring(phone.length - 2);
+    const maskedPart = '*'.repeat(phone.length - 4);
+    
+    return `${firstPart}${maskedPart}${lastPart}`;
   };
 
   const styles = StyleSheet.create({
@@ -108,13 +154,13 @@ export default function Verification() {
       marginHorizontal: 25,
     },
     otpInput: {
-      width: 70,
-      height: 70,
+      width: 50, // Lebih kecil untuk menampung 6 digit
+      height: 50, // Lebih kecil untuk menampung 6 digit
       borderWidth: 1,
       borderColor: '#E0E0E0',
       borderRadius: 12,
       textAlign: 'center',
-      fontSize: 24,
+      fontSize: 20, // Sedikit lebih kecil
       fontFamily: theme.fontFamily.bold,
       backgroundColor: '#fff',
     },
@@ -141,6 +187,15 @@ export default function Verification() {
       width: 18,
       height: 18,
       tintColor: '#000',
+    },
+    resendContainer: {
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    resendText: {
+      color: theme.colors.purple,
+      fontFamily: theme.fontFamily.medium,
+      fontSize: 14,
     },
   });
 
@@ -169,15 +224,15 @@ export default function Verification() {
 
             <View style={styles.header}>
               <Text style={styles.title}>
-                Sebelum lanjut, Silakan{'\n'}Masukkan Kode Verifikasi 4 Digit
+                Sebelum lanjut, Silakan{'\n'}Masukkan Kode Verifikasi 6 Digit
               </Text>
               <Text style={styles.subtitle}>
-                yang Kami Kirim ke <Text style={styles.phoneNumber}>08*******99</Text>
+                yang Kami Kirim ke <Text style={styles.phoneNumber}>{formatPhoneDisplay(phone)}</Text>
               </Text>
             </View>
 
             <View style={styles.otpContainer}>
-              {[0, 1, 2, 3].map((index) => (
+              {[0, 1, 2, 3, 4, 5].map((index) => (
                 <TextInput
                   key={index}
                   ref={(ref) => { inputRefs.current[index] = ref; }}
@@ -187,6 +242,7 @@ export default function Verification() {
                   value={otp[index]}
                   onChangeText={(value) => handleOtpChange(value, index)}
                   onKeyPress={(e) => handleKeyPress(e, index)}
+                  editable={!isLoading}
                 />
               ))}
             </View>
@@ -194,8 +250,15 @@ export default function Verification() {
             <TouchableOpacity 
               style={styles.submitButton}
               onPress={handleVerifyOtp}
+              disabled={isLoading}
             >
-              <Text style={styles.submitButtonText}>Kirim</Text>
+              <Text style={styles.submitButtonText}>
+                {isLoading ? 'Memproses...' : 'Kirim'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.resendContainer}>
+              <Text style={styles.resendText}>Kirim ulang kode</Text>
             </TouchableOpacity>
           </SafeAreaView>
         </ImageBackground>

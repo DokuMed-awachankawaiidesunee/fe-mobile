@@ -15,6 +15,7 @@ import { Appearance } from 'react-native';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { CustomThemeProvider } from '../hooks/useTheme';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -38,19 +39,22 @@ export default function RootLayout() {
 
   return (
     <CustomThemeProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="landing" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="verification" options={{ headerShown: false }} />
-        <Stack.Screen name="data-general" options={{ headerShown: false }} />
-        <Stack.Screen name="data-resident" options={{ headerShown: false }} />
-        <Stack.Screen name="data-personal" options={{ headerShown: false }} />
-      </Stack>
-        <StatusBar style="dark" />
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="landing" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="register" options={{ headerShown: false }} />
+            <Stack.Screen name="verification" options={{ headerShown: false }} />
+            <Stack.Screen name="password" options={{ headerShown: false }} />
+            <Stack.Screen name="data-general" options={{ headerShown: false }} />
+            <Stack.Screen name="data-resident" options={{ headerShown: false }} />
+            <Stack.Screen name="data-personal" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </AuthProvider>
     </CustomThemeProvider>
   );
 }

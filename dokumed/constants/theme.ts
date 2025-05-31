@@ -21,6 +21,7 @@ const colors = {
   'neutral-500': '#D9D9D9',
   'neutral-800': '#8F8F8F',
   'white': '#FFFFFF',
+  'green': '#34A853',
 };
 
 const lightColors = {
@@ -47,7 +48,8 @@ const lightColors = {
   neutral_500: colors['neutral-500'],
   neutral_800: colors['neutral-800'],
   black: '#000000',
-  white: '#FFFFFF'
+  white: '#FFFFFF',
+  green: colors['green'],
 };
 
 export const lightTheme = {

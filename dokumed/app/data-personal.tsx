@@ -14,29 +14,48 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  GestureResponderEvent
+  GestureResponderEvent,
+  Alert
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DataPersonal() {
   const { theme } = useTheme();
+  const { setRegistrationData, submitRegistrationData } = useAuth();
   const [birthDate, setBirthDate] = useState('');
   const [gender, setGender] = useState('');
   const [bloodType, setBloodType] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validasi data
     if (!birthDate || !gender || !bloodType) {
-      alert('Silakan lengkapi semua data');
+      Alert.alert('Error', 'Silakan lengkapi semua data');
       return;
     }
     
-    // Simulasi proses pendaftaran berhasil
-    alert('Pendaftaran berhasil! Silakan login dengan akun Anda.');
-    
-    // Navigasi ke halaman login
-    router.replace('/login');
+    try {
+      setIsLoading(true);
+      
+      // Simpan data ke context
+      setRegistrationData({
+        birth_date: birthDate,
+        gender,
+        blood_type: bloodType
+      });
+      
+      // Submit semua data registrasi
+      await submitRegistrationData();
+      
+      // Navigasi ke halaman login (ditangani oleh context)
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Gagal menyelesaikan pendaftaran';
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Definisikan tipe untuk props komponen Dropdown
@@ -181,6 +200,7 @@ export default function DataPersonal() {
       padding: 15,
       alignItems: 'center',
       marginTop: 20,
+      marginHorizontal: 20,
     },
     submitButtonText: {
       color: '#fff',
@@ -197,6 +217,10 @@ export default function DataPersonal() {
       width: 18,
       height: 18,
       tintColor: '#000',
+    },
+    requiredIndicator: {
+      color: 'red',
+      marginLeft: 4,
     },
   });
 
@@ -242,13 +266,16 @@ export default function DataPersonal() {
               </View>
 
               <View>
-                <Text style={styles.inputLabel}>Tanggal Lahir</Text>
+                <Text style={styles.inputLabel}>
+                  Tanggal Lahir <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TouchableOpacity 
                   style={styles.dateInput}
                   onPress={() => {
                     // Dalam aplikasi nyata, akan menampilkan date picker
                     setBirthDate('29/02/2005'); // Hard-coded untuk demo
                   }}
+                  disabled={isLoading}
                 >
                   <Text style={styles.dateIcon}>📅</Text>
                   <Text style={birthDate ? styles.dateInputText : [styles.dateInputText, { color: '#757575' }]}>
@@ -256,14 +283,18 @@ export default function DataPersonal() {
                   </Text>
                 </TouchableOpacity>
                 
-                <Text style={styles.inputLabel}>Jenis Kelamin</Text>
+                <Text style={styles.inputLabel}>
+                  Jenis Kelamin <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <Dropdown 
                   placeholder="Pilih jenis kelamin Anda"
                   value={gender}
                   onPress={handleSelectGender}
                 />
                 
-                <Text style={styles.inputLabel}>Golongan Darah</Text>
+                <Text style={styles.inputLabel}>
+                  Golongan Darah <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <Dropdown 
                   placeholder="Pilih golongan darah Anda"
                   value={bloodType}
@@ -273,8 +304,11 @@ export default function DataPersonal() {
                 <TouchableOpacity 
                   style={styles.submitButton}
                   onPress={handleSubmit}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.submitButtonText}>Kirim</Text>
+                  <Text style={styles.submitButtonText}>
+                    {isLoading ? 'Memproses...' : 'Kirim'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>

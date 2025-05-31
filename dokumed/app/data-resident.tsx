@@ -13,13 +13,16 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DataResident() {
   const { theme } = useTheme();
+  const { setRegistrationData } = useAuth();
   const [nik, setNik] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -28,11 +31,24 @@ export default function DataResident() {
   const handleNext = () => {
     // Validasi data
     if (!nik || !address || !city || !province) {
-      alert('Silakan lengkapi semua data');
+      Alert.alert('Error', 'Silakan lengkapi semua data');
       return;
     }
     
-    // Simpan data dan navigasi ke halaman berikutnya
+    if (nik.length !== 16) {
+      Alert.alert('Error', 'NIK harus terdiri dari 16 digit');
+      return;
+    }
+    
+    // Simpan data ke context
+    setRegistrationData({
+      nik,
+      address,
+      city,
+      province
+    });
+    
+    // Navigasi ke halaman berikutnya
     router.push('/data-personal');
   };
 
@@ -138,6 +154,10 @@ export default function DataResident() {
       height: 18,
       tintColor: '#000',
     },
+    requiredIndicator: {
+      color: 'red',
+      marginLeft: 4,
+    },
   });
 
   return (
@@ -182,7 +202,9 @@ export default function DataResident() {
               </View>
 
               <View>
-                <Text style={styles.inputLabel}>NIK</Text>
+                <Text style={styles.inputLabel}>
+                  NIK <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Masukkan NIK Anda"
@@ -192,7 +214,9 @@ export default function DataResident() {
                   maxLength={16}
                 />
                 
-                <Text style={styles.inputLabel}>Alamat</Text>
+                <Text style={styles.inputLabel}>
+                  Alamat <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.addressInput}
                   placeholder="Masukkan alamat Anda"
@@ -202,7 +226,9 @@ export default function DataResident() {
                   numberOfLines={4}
                 />
                 
-                <Text style={styles.inputLabel}>Kota</Text>
+                <Text style={styles.inputLabel}>
+                  Kota <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Masukkan kota Anda"
@@ -210,10 +236,12 @@ export default function DataResident() {
                   onChangeText={setCity}
                 />
                 
-                <Text style={styles.inputLabel}>Province</Text>
+                <Text style={styles.inputLabel}>
+                  Provinsi <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Masukkan nomor telepon"
+                  placeholder="Masukkan provinsi Anda"
                   value={province}
                   onChangeText={setProvince}
                 />

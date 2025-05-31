@@ -13,26 +13,68 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DataGeneral() {
   const { theme } = useTheme();
+  const { setRegistrationData } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+  
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
   
   const handleNext = () => {
     // Validasi data
-    if (!firstName || !lastName || !email || !phone) {
-      alert('Silakan lengkapi semua data');
+    if (!firstName || !lastName || !email || !phone || !password) {
+      Alert.alert('Error', 'Silakan lengkapi semua data');
       return;
     }
     
-    // Simpan data dan navigasi ke halaman berikutnya
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Password dan konfirmasi password tidak cocok');
+      return;
+    }
+    
+    // Validasi kekuatan password
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password harus terdiri dari minimal 8 karakter');
+      return;
+    }
+    
+    // Validasi format email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Format email tidak valid');
+      return;
+    }
+    
+    // Simpan data ke context
+    setRegistrationData({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      phone_number: phone,
+      password
+    });
+    
+    // Navigasi ke halaman berikutnya
     router.push('/data-resident');
   };
 
@@ -103,6 +145,32 @@ export default function DataGeneral() {
       fontFamily: theme.fontFamily.regular,
       marginHorizontal: 20,
     },
+    passwordContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      borderRadius: 20,
+      paddingHorizontal: 15,
+      marginBottom: 20,
+      marginHorizontal: 20,
+    },
+    passwordInput: {
+      flex: 1,
+      padding: 15,
+      fontSize: 16,
+      fontFamily: theme.fontFamily.regular,
+    },
+    eyeIcon: {
+      padding: 10,
+    },
+    passwordHint: {
+      fontSize: 12,
+      fontFamily: theme.fontFamily.regular,
+      color: '#757575',
+      marginHorizontal: 20,
+      marginTop: -15,
+      marginBottom: 15,
+    },
     nextButton: {
       backgroundColor: theme.colors.purple,
       borderRadius: 50,
@@ -126,6 +194,10 @@ export default function DataGeneral() {
       width: 18,
       height: 18,
       tintColor: '#000',
+    },
+    requiredIndicator: {
+      color: 'red',
+      marginLeft: 4,
     },
   });
 
@@ -171,7 +243,9 @@ export default function DataGeneral() {
               </View>
 
               <View>
-                <Text style={styles.inputLabel}>Nama Depan</Text>
+                <Text style={styles.inputLabel}>
+                  Nama Depan <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Masukkan nama depan Anda"
@@ -179,7 +253,9 @@ export default function DataGeneral() {
                   onChangeText={setFirstName}
                 />
                 
-                <Text style={styles.inputLabel}>Nama Belakang</Text>
+                <Text style={styles.inputLabel}>
+                  Nama Belakang <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Masukkan nama belakang Anda"
@@ -187,7 +263,9 @@ export default function DataGeneral() {
                   onChangeText={setLastName}
                 />
                 
-                <Text style={styles.inputLabel}>Email</Text>
+                <Text style={styles.inputLabel}>
+                  Email <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Masukkan email Anda"
@@ -197,7 +275,9 @@ export default function DataGeneral() {
                   autoCapitalize="none"
                 />
                 
-                <Text style={styles.inputLabel}>Phone Number</Text>
+                <Text style={styles.inputLabel}>
+                  Nomor Telepon <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Masukkan nomor telepon"
@@ -205,6 +285,43 @@ export default function DataGeneral() {
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
                 />
+                
+                <Text style={styles.inputLabel}>
+                  Password <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Buat password Anda"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity style={styles.eyeIcon} onPress={toggleShowPassword}>
+                    <Text>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.passwordHint}>
+                  Password minimal 8 karakter
+                </Text>
+                
+                <Text style={styles.inputLabel}>
+                  Konfirmasi Password <Text style={styles.requiredIndicator}>*</Text>
+                </Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Konfirmasi password Anda"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity style={styles.eyeIcon} onPress={toggleShowConfirmPassword}>
+                    <Text>{showConfirmPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                  </TouchableOpacity>
+                </View>
                 
                 <TouchableOpacity 
                   style={styles.nextButton}

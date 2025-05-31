@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -12,18 +12,92 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
+import authService from '@/services/authService';
+import otpService from '@/services/otpService';
 
 export default function Login() {
   const { theme } = useTheme();
+  const { setPhone, login, loginWithGoogle, setLoginFlow } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   
-  const handleLogin = () => {
-    // Navigasi ke halaman index tab setelah login berhasil
-    router.replace('/(tabs)');
+  // Set auth flow ke login saat komponen dipasang
+  useEffect(() => {
+    setLoginFlow();
+  }, []);
+  
+  const handleSendOtp = async () => {
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      Alert.alert('Error', 'Silakan masukkan nomor telepon Anda');
+      return;
+    }
+    
+    try {
+      setIsChecking(true);
+      
+      // Periksa apakah nomor telepon terdaftar
+      const isRegistered = await authService.checkPhoneExists(phoneNumber);
+      
+      if (!isRegistered) {
+        Alert.alert(
+          'Nomor tidak terdaftar',
+          'Nomor telepon Anda belum terdaftar. Silakan daftar terlebih dahulu.',
+          [
+            { text: 'Batal', style: 'cancel' },
+            { 
+              text: 'Daftar Sekarang', 
+              onPress: () => router.push('/register')
+            }
+          ]
+        );
+        setIsChecking(false);
+        return;
+      }
+      
+      setIsChecking(false);
+      setIsLoading(true);
+      
+      // Store phone in context
+      setPhone(phoneNumber);
+      
+      // Send OTP
+      const response = await otpService.sendOtp(phoneNumber);
+      
+      if (response.success) {
+        // Navigate to verification page
+        router.push('/verification');
+      } else {
+        Alert.alert('Error', response.message || 'Gagal mengirim kode OTP');
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Terjadi kesalahan';
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setIsLoading(false);
+      setIsChecking(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await loginWithGoogle();
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Gagal login dengan Google';
+      Alert.alert('Error', errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = () => {
@@ -119,6 +193,7 @@ export default function Login() {
       shadowOpacity: 0.2,
       shadowRadius: 1.5,
       marginHorizontal: 25,
+      marginBottom: 15,
     },
     loginButton: {
       backgroundColor: theme.colors.purple,
@@ -148,6 +223,17 @@ export default function Login() {
       fontFamily: theme.fontFamily.semibold,
       marginLeft: 5,
     },
+    loadingOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255,255,255,0.7)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    },
   });
 
   return (
@@ -162,6 +248,15 @@ export default function Login() {
           style={styles.backgroundImage}
           resizeMode="cover"
         >
+          {isChecking && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color={theme.colors.purple} />
+              <Text style={{ marginTop: 10, fontFamily: theme.fontFamily.medium }}>
+                Memeriksa nomor telepon...
+              </Text>
+            </View>
+          )}
+          
           <SafeAreaView style={styles.content}>
             <View style={styles.logoContainer}>
               <Image 
@@ -175,7 +270,11 @@ export default function Login() {
               Senang bertemu Anda{'\n'}lagi di <Text style={styles.highlightText}>DokuMed</Text>!
             </Text>
             
-            <TouchableOpacity style={styles.googleButton}>
+            <TouchableOpacity 
+              style={styles.googleButton}
+              onPress={handleGoogleLogin}
+              disabled={isLoading || isChecking}
+            >
               <Image 
                 source={require('@/assets/images/google-icon.png')} 
                 style={styles.googleIcon}
@@ -196,15 +295,22 @@ export default function Login() {
               value={phoneNumber}
               onChangeText={setPhoneNumber}
               keyboardType="phone-pad"
+              editable={!isLoading && !isChecking}
             />
             
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Masuk</Text>
+            <TouchableOpacity 
+              style={styles.loginButton} 
+              onPress={handleSendOtp}
+              disabled={isLoading || isChecking}
+            >
+              <Text style={styles.loginButtonText}>
+                {isLoading ? 'Memproses...' : 'Masuk'}
+              </Text>
             </TouchableOpacity>
             
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>Belum memiliki akun?</Text>
-              <TouchableOpacity onPress={handleRegister}>
+              <TouchableOpacity onPress={handleRegister} disabled={isLoading || isChecking}>
                 <Text style={styles.registerLink}>Daftar Sekarang</Text>
               </TouchableOpacity>
             </View>
