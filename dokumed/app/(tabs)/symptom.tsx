@@ -9,6 +9,8 @@ import {
   SafeAreaView,
   Modal,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { ChevronLeft, Search, X, Phone, ChevronDown, ChevronUp, User } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
@@ -40,6 +42,7 @@ interface Hospital {
   doctors: Doctor[];
 }
 
+// Mock data for available symptoms
 const availableSymptoms: Symptom[] = [
   { id: '1', name: 'Mual' },
   { id: '2', name: 'Sakit kepala' },
@@ -53,21 +56,37 @@ const availableSymptoms: Symptom[] = [
   { id: '10', name: 'Pusing' },
   { id: '11', name: 'Demam' },
   { id: '12', name: 'Sesak napas' },
+  { id: '13', name: 'Nyeri otot' },
+  { id: '14', name: 'Demam tinggi' },
+  { id: '15', name: 'Ruam kulit' },
+  { id: '16', name: 'Nyeri sendi' },
+  { id: '17', name: 'Muntah' },
 ];
 
+// Mock predicted symptoms based on user input
+const predictedSymptoms: Symptom[] = [
+  { id: '1', name: 'Mual' },
+  { id: '13', name: 'Nyeri otot' },
+  { id: '14', name: 'Demam tinggi' },
+  { id: '15', name: 'Ruam kulit' },
+  { id: '5', name: 'Pilek' },
+  { id: '17', name: 'Muntah' },
+];
+
+// Mock hospital data
 const mockHospitals: Hospital[] = [
   {
     id: '1',
     name: 'Klinik Utama Jasmine MQ Medika',
     address: 'Jl. Dayang Sumbi No.10, Lb. Siliwangi, Kecamatan Coblong, Kota Bandung, Jawa Barat 40132',
     distance: '2.4 kilometer dari Anda',
-    image: 'https://via.placeholder.com/120',
+    image: '../../assets/images/jasmine-sq.png',
     phone: '+62-22-1234567',
     doctors: [
       {
         id: '1',
         name: 'Dr. Erdianti Silalahi',
-        specialty: 'Poli Penyakit dalam',
+        specialty: 'Poli Penyakit Dalam',
         schedule: [
           { day: 'Senin', hours: '09.00-14.00' },
           { day: 'Selasa', hours: '09.00-14.00' },
@@ -77,7 +96,7 @@ const mockHospitals: Hospital[] = [
       {
         id: '2',
         name: 'Dr. Wiga Ryan',
-        specialty: 'Poli Penyakit dalam',
+        specialty: 'Poli Penyakit Dalam',
         schedule: [
           { day: 'Senin', hours: '09.00-14.00' },
           { day: 'Selasa', hours: '09.00-14.00' },
@@ -98,7 +117,7 @@ const mockHospitals: Hospital[] = [
       {
         id: '3',
         name: 'Dr. Ahmad Fauzi',
-        specialty: 'Poli Penyakit dalam',
+        specialty: 'Poli Penyakit Dalam',
         schedule: [
           { day: 'Senin', hours: '08.00-15.00' },
           { day: 'Selasa', hours: '08.00-15.00' },
@@ -109,36 +128,115 @@ const mockHospitals: Hospital[] = [
   },
 ];
 
+// Duration options for symptoms
+const durationOptions = [
+  'Kurang dari 1 Hari',
+  '1 Hari - 1 Minggu',
+  '1 Minggu - 1 Bulan',
+  '1 Bulan - 1 Tahun',
+  'Lebih dari 1 Tahun',
+];
+
+// Severity options for symptoms
+const severityOptions = [
+  'Ringan',
+  'Sedang',
+  'Parah',
+];
+
 export default function CheckScreen() {
   const { theme } = useTheme();
   
+  // State for the initial text input
+  const [symptomText, setSymptomText] = useState('');
+  const [showTextInput, setShowTextInput] = useState(true);
+  
+  // State for predicted symptoms
+  const [showPredictedSymptoms, setShowPredictedSymptoms] = useState(false);
+  
+  // State for selected symptoms
   const [selectedSymptoms, setSelectedSymptoms] = useState<Symptom[]>([]);
+  
+  // State for symptom search
   const [searchText, setSearchText] = useState('');
+  const [showSymptomSearch, setShowSymptomSearch] = useState(false);
+  
+  // State for duration selection
+  const [showDurationSelection, setShowDurationSelection] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
+  
+  // State for severity selection
+  const [showSeveritySelection, setShowSeveritySelection] = useState(false);
+  const [selectedSeverity, setSelectedSeverity] = useState<string | null>(null);
+  
+  // State for results
   const [showResult, setShowResult] = useState(false);
+  
+  // State for hospital details
   const [showHospitalDetail, setShowHospitalDetail] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
 
+  // Filter symptoms based on search text
   const filteredSymptoms = availableSymptoms.filter(symptom =>
     symptom.name.toLowerCase().includes(searchText.toLowerCase()) &&
     !selectedSymptoms.find(selected => selected.id === symptom.id)
   );
 
+  // Add symptom to selected symptoms
   const addSymptom = (symptom: Symptom) => {
-    setSelectedSymptoms([...selectedSymptoms, symptom]);
+    if (!selectedSymptoms.find(s => s.id === symptom.id)) {
+      setSelectedSymptoms([...selectedSymptoms, symptom]);
+    }
   };
 
+  // Remove symptom from selected symptoms
   const removeSymptom = (symptomId: string) => {
     setSelectedSymptoms(selectedSymptoms.filter(s => s.id !== symptomId));
   };
 
+  // Handle back button from symptom input
   const handleBackFromSymptomInput = () => {
     router.back();
   };
 
-  const handleConfirmSymptoms = () => {
-    setShowResult(true);
+  // Handle "Tanya Doku!" button press
+  const handleAskDoku = () => {
+    setShowTextInput(false);
+    setShowPredictedSymptoms(true);
   };
 
+  // Handle confirm symptoms button press
+  const handleConfirmSymptoms = () => {
+    setShowPredictedSymptoms(false);
+    setShowSymptomSearch(false);
+    setShowDurationSelection(true);
+  };
+
+  // Handle duration selection
+  const handleSelectDuration = (duration: string) => {
+    setSelectedDuration(duration);
+  };
+
+  const handleConfirmDuration = () => {
+    if (selectedDuration) {
+      setShowDurationSelection(false);
+      setShowSeveritySelection(true);
+    }
+  };
+
+  // Handle severity selection
+  const handleSelectSeverity = (severity: string) => {
+    setSelectedSeverity(severity);
+  };
+
+  const handleConfirmSeverity = () => {
+    if (selectedSeverity) {
+      setShowSeveritySelection(false);
+      setShowResult(true);
+    }
+  };
+
+  // Handle back to home
   const handleBackToHome = () => {
     setShowResult(false);
     setShowHospitalDetail(false);
@@ -146,8 +244,8 @@ export default function CheckScreen() {
     router.replace('/');
   };
 
+  // Handle hospital press
   const handleHospitalPress = (hospital: Hospital) => {
-    // Set hospital data and show detail modal immediately
     setSelectedHospital({
       ...hospital,
       doctors: hospital.doctors.map(doctor => ({
@@ -158,25 +256,39 @@ export default function CheckScreen() {
     setShowHospitalDetail(true);
   };
 
+  // Handle close hospital detail
   const handleCloseHospitalDetail = () => {
     setShowHospitalDetail(false);
-    // Clear selected hospital after modal animation completes
     setTimeout(() => {
       setSelectedHospital(null);
     }, 300);
   };
 
+  // Handle back from result
   const handleBackFromResult = () => {
-    // If hospital detail is open, close it first
     if (showHospitalDetail) {
       setShowHospitalDetail(false);
       setSelectedHospital(null);
     } else {
-      // Otherwise, go back to symptom selection
       setShowResult(false);
+      setShowSeveritySelection(true);
     }
   };
 
+  // Handle back from severity selection
+  const handleBackFromSeverity = () => {
+    setShowSeveritySelection(false);
+    setShowDurationSelection(true);
+  };
+
+  // Handle back from duration selection
+  const handleBackFromDuration = () => {
+    setShowDurationSelection(false);
+    setShowPredictedSymptoms(true);
+    setShowSymptomSearch(true);
+  };
+
+  // Toggle doctor expansion
   const toggleDoctorExpansion = (doctorId: string) => {
     if (!selectedHospital) return;
     
@@ -234,6 +346,15 @@ export default function CheckScreen() {
       backgroundColor: theme.colors.primary,
       borderRadius: 3,
     },
+    progressFill50: {
+      width: '50%',
+    },
+    progressFill70: {
+      width: '70%',
+    },
+    progressFill90: {
+      width: '90%',
+    },
     exitText: {
       fontSize: theme.fontSizes.b3,
       fontFamily: theme.fontFamily.medium,
@@ -259,6 +380,22 @@ export default function CheckScreen() {
       fontFamily: theme.fontFamily.medium,
       color: theme.colors.text,
       lineHeight: 24,
+    },
+    textInputContainer: {
+      marginTop: theme.spacing.b1,
+      marginBottom: theme.spacing.sh2,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 12,
+      padding: theme.spacing.b1,
+      height: 200,
+    },
+    textInput: {
+      flex: 1,
+      fontSize: theme.fontSizes.b2,
+      fontFamily: theme.fontFamily.regular,
+      color: theme.colors.text,
+      textAlignVertical: 'top',
     },
     symptomsSection: {
       flex: 1,
@@ -354,6 +491,29 @@ export default function CheckScreen() {
       fontFamily: theme.fontFamily.semibold,
       color: theme.colors.white,
     },
+    optionsList: {
+      marginTop: theme.spacing.sh2,
+    },
+    optionButton: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 12,
+      padding: theme.spacing.b1,
+      marginBottom: theme.spacing.b1,
+    },
+    selectedOptionButton: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    optionText: {
+      fontSize: theme.fontSizes.b2,
+      fontFamily: theme.fontFamily.medium,
+      color: theme.colors.text,
+      textAlign: 'center',
+    },
+    selectedOptionText: {
+      color: theme.colors.white,
+    },
     recommendationSection: {
       flex: 1,
     },
@@ -369,16 +529,33 @@ export default function CheckScreen() {
       borderRadius: 12,
       marginBottom: theme.spacing.sh2,
     },
+    bpjsCard: {
+      backgroundColor: theme.colors.light_green,
+      padding: theme.spacing.sh2,
+      borderRadius: 12,
+      marginBottom: theme.spacing.sh2,
+    },
     priceLabel: {
       fontSize: theme.fontSizes.b3,
       fontFamily: theme.fontFamily.medium,
       color: theme.colors.primary,
       marginBottom: theme.spacing.b3,
     },
+    bpjsLabel: {
+      fontSize: theme.fontSizes.b3,
+      fontFamily: theme.fontFamily.medium,
+      color: theme.colors.green,
+      marginBottom: theme.spacing.b3,
+    },
     priceRange: {
       fontSize: theme.fontSizes.sh2,
       fontFamily: theme.fontFamily.bold,
       color: theme.colors.primary,
+    },
+    bpjsService: {
+      fontSize: theme.fontSizes.sh2,
+      fontFamily: theme.fontFamily.bold,
+      color: theme.colors.green,
     },
     hospitalSectionTitle: {
       fontSize: theme.fontSizes.sh2,
@@ -583,7 +760,73 @@ export default function CheckScreen() {
     },
   });
 
-  const renderSymptomChecker = () => (
+  // Render text input screen
+  const renderTextInput = () => (
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={handleBackFromSymptomInput}
+          >
+            <ChevronLeft size={24} color={theme.colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>DokuCek</Text>
+          <View style={styles.headerRight} />
+        </View>
+
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={styles.progressFill} />
+          </View>
+          <Text style={styles.exitText}>Keluar</Text>
+        </View>
+
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.questionSection}>
+            <Image 
+              source={require('@/assets/images/app-logo.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.questionText}>
+              Apa yang sedang kamu rasakan saat ini?
+            </Text>
+          </View>
+
+          <View style={styles.textInputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ceritakan apa yang kamu rasakan..."
+              placeholderTextColor={theme.colors.neutral_800}
+              multiline={true}
+              value={symptomText}
+              onChangeText={setSymptomText}
+            />
+          </View>
+        </ScrollView>
+
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[
+              styles.confirmButton,
+              symptomText.trim().length === 0 && styles.confirmButtonDisabled
+            ]}
+            onPress={handleAskDoku}
+            disabled={symptomText.trim().length === 0}
+          >
+            <Text style={styles.confirmButtonText}>Tanya Doku!</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
+  );
+
+  // Render predicted symptoms screen
+  const renderPredictedSymptoms = () => (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity 
@@ -592,7 +835,7 @@ export default function CheckScreen() {
         >
           <ChevronLeft size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>DokuCheck</Text>
+        <Text style={styles.headerTitle}>DokuCek</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -611,21 +854,22 @@ export default function CheckScreen() {
             resizeMode="contain"
           />
           <Text style={styles.questionText}>
-            Apa yang sedang kamu rasakan saat ini?
+            Dari analisis Doku sih, kamu lagi merasakan beberapa hal ini, ya?
           </Text>
         </View>
 
         <View style={styles.symptomsSection}>
-          <Text style={styles.sectionTitle}>Gejala Anda</Text>
+          <Text style={styles.sectionTitle}>Gejala Kamu</Text>
           
           <View style={styles.searchContainer}>
             <Search size={20} color={theme.colors.neutral_800} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Cari gejala Anda"
+              placeholder="Pilih gejala kamu"
               placeholderTextColor={theme.colors.neutral_800}
               value={searchText}
               onChangeText={setSearchText}
+              onFocus={() => setShowSymptomSearch(true)}
             />
           </View>
 
@@ -644,19 +888,35 @@ export default function CheckScreen() {
             </View>
           )}
 
-          <View style={styles.symptomsList}>
-            {filteredSymptoms.map((symptom) => (
-              <View key={symptom.id} style={styles.symptomItem}>
-                <Text style={styles.symptomName}>{symptom.name}</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => addSymptom(symptom)}
-                >
-                  <Text style={styles.addButtonText}>+</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
+          {!showSymptomSearch ? (
+            <View style={styles.symptomsList}>
+              {predictedSymptoms.map((symptom) => (
+                <View key={symptom.id} style={styles.symptomItem}>
+                  <Text style={styles.symptomName}>{symptom.name}</Text>
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => addSymptom(symptom)}
+                  >
+                    <Text style={styles.addButtonText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.symptomsList}>
+              {filteredSymptoms.map((symptom) => (
+                <View key={symptom.id} style={styles.symptomItem}>
+                  <Text style={styles.symptomName}>{symptom.name}</Text>
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => addSymptom(symptom)}
+                  >
+                    <Text style={styles.addButtonText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -675,6 +935,179 @@ export default function CheckScreen() {
     </SafeAreaView>
   );
 
+  // Render duration selection screen
+  const renderDurationSelection = () => (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={handleBackFromDuration}
+        >
+          <ChevronLeft size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>DokuCek</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, styles.progressFill50]} />
+        </View>
+        <Text style={styles.exitText}>Keluar</Text>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.questionSection}>
+          <Image 
+            source={require('@/assets/images/app-logo.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.questionText}>
+            Doku ingin tahu nih, kamu sudah merasakan hal itu berapa lama?
+          </Text>
+        </View>
+
+        <View style={styles.symptomsSection}>
+          <Text style={styles.sectionTitle}>Gejala Kamu</Text>
+          
+          <View style={styles.selectedSymptomsContainer}>
+            {selectedSymptoms.map((symptom) => (
+              <View
+                key={symptom.id}
+                style={styles.symptomTag}
+              >
+                <Text style={styles.symptomTagText}>{symptom.name}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.optionsList}>
+            {durationOptions.map((duration, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.optionButton,
+                  selectedDuration === duration && styles.selectedOptionButton
+                ]}
+                onPress={() => handleSelectDuration(duration)}
+              >
+                <Text 
+                  style={[
+                    styles.optionText,
+                    selectedDuration === duration && styles.selectedOptionText
+                  ]}
+                >
+                  {duration}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity
+          style={[
+            styles.confirmButton,
+            !selectedDuration && styles.confirmButtonDisabled
+          ]}
+          onPress={handleConfirmDuration}
+          disabled={!selectedDuration}
+        >
+          <Text style={styles.confirmButtonText}>Konfirmasi</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+
+  // Render severity selection screen
+  const renderSeveritySelection = () => (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={handleBackFromSeverity}
+        >
+          <ChevronLeft size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>DokuCek</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, styles.progressFill70]} />
+        </View>
+        <Text style={styles.exitText}>Keluar</Text>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.questionSection}>
+          <Image 
+            source={require('@/assets/images/app-logo.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.questionText}>
+            Doku ingin tahu lagi nih, udah seberapa parah gejalanya?
+          </Text>
+        </View>
+
+        <View style={styles.symptomsSection}>
+          <Text style={styles.sectionTitle}>Gejala Kamu</Text>
+          
+          <View style={styles.selectedSymptomsContainer}>
+            {selectedSymptoms.map((symptom) => (
+              <View
+                key={symptom.id}
+                style={styles.symptomTag}
+              >
+                <Text style={styles.symptomTagText}>{symptom.name}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.optionsList}>
+            {severityOptions.map((severity, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.optionButton,
+                  selectedSeverity === severity && styles.selectedOptionButton
+                ]}
+                onPress={() => handleSelectSeverity(severity)}
+              >
+                <Text 
+                  style={[
+                    styles.optionText,
+                    selectedSeverity === severity && styles.selectedOptionText
+                  ]}
+                >
+                  {severity}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity
+          style={[
+            styles.confirmButton,
+            !selectedSeverity && styles.confirmButtonDisabled
+          ]}
+          onPress={handleConfirmSeverity}
+          disabled={!selectedSeverity}
+        >
+          <Text style={styles.confirmButtonText}>Cek Rekomendasi Doku</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+
+  // Render result screen
   const renderResultScreen = () => (
     <Modal visible={showResult} animationType="slide" presentationStyle="fullScreen">
       <SafeAreaView style={styles.container}>
@@ -685,13 +1118,13 @@ export default function CheckScreen() {
           >
             <ChevronLeft size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>DokuCheck</Text>
+          <Text style={styles.headerTitle}>DokuCek</Text>
           <View style={styles.headerRight} />
         </View>
 
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '70%' }]} />
+            <View style={[styles.progressFill, styles.progressFill90]} />
           </View>
           <Text style={styles.exitText}>Keluar</Text>
         </View>
@@ -710,11 +1143,16 @@ export default function CheckScreen() {
 
           <View style={styles.recommendationSection}>
             <Text style={styles.sectionTitle}>Rekomendasi Poli</Text>
-            <Text style={styles.poliText}>Poli Penyakit dalam</Text>
+            <Text style={styles.poliText}>Poli Penyakit Dalam</Text>
             
             <View style={styles.priceCard}>
               <Text style={styles.priceLabel}>Kisaran Harga</Text>
               <Text style={styles.priceRange}>Rp.100.000 - Rp.150.000</Text>
+            </View>
+
+            <View style={styles.bpjsCard}>
+              <Text style={styles.bpjsLabel}>Layanan yang Dicover BPJS</Text>
+              <Text style={styles.bpjsService}>Dokter, Obat</Text>
             </View>
 
             <Text style={styles.hospitalSectionTitle}>Rekomendasi Fasilitas Kesehatan</Text>
@@ -792,7 +1230,7 @@ export default function CheckScreen() {
 
               <View style={styles.doctorsSection}>
                 <Text style={styles.doctorsTitle}>Daftar Dokter</Text>
-                <Text style={styles.doctorsSubtitle}>Poli Penyakit dalam</Text>
+                <Text style={styles.doctorsSubtitle}>Poli Penyakit Dalam</Text>
                 
                 {selectedHospital.doctors.map((doctor) => (
                   <View key={doctor.id} style={styles.doctorCard}>
@@ -840,7 +1278,10 @@ export default function CheckScreen() {
 
   return (
     <>
-      {renderSymptomChecker()}
+      {showTextInput && renderTextInput()}
+      {showPredictedSymptoms && renderPredictedSymptoms()}
+      {showDurationSelection && renderDurationSelection()}
+      {showSeveritySelection && renderSeveritySelection()}
       {renderResultScreen()}
     </>
   );
